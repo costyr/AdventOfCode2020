@@ -44,7 +44,7 @@ function ScanPassports(aTotal, aElem) {
         isValid = (unit >= 150) && (unit <= 193);
       }
       else if (fieldMap[field].endsWith('in')) {
-        let unit = parseInt(fieldMap[field].split('cm')[0], 10);
+        let unit = parseInt(fieldMap[field].split('in')[0], 10);
         isValid = ((unit >= 59) && (unit <= 76));
       }
       else
