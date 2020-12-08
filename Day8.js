@@ -1,21 +1,11 @@
 const util = require('./Util.js');
 
-function ParseProgram(aTotal, aElem) 
-{
-  let rawInst = aElem.split(' ');
-
-  aTotal.push({ inst: rawInst[0], param: parseInt(rawInst[1]) });
-
-  return aTotal;
-}
-
 function RunProgram(aInst) {
-  
+
   let i = 0;
   let acc = 0;
   let instMap = [];
-  while (i < aInst.length) 
-  {
+  while (i < aInst.length) {
     if (instMap[i] !== undefined)
       return { acc: acc, exitCode: -1 };
     else
@@ -34,15 +24,14 @@ function RunProgram(aInst) {
   return { acc: acc, exitCode: 0 };
 }
 
-function RepairProgram(aInst) 
-{
+function RepairProgram(aInst) {
   for (let i = 0; i < aInst.length; i++) {
     if (aInst[i].inst == "jmp") {
       aInst[i].inst = "nop";
 
       let ret = RunProgram(aInst);
 
-      if (ret.exitCode != -1) 
+      if (ret.exitCode != -1)
         return ret.acc;
       else
         aInst[i].inst = "jmp";
@@ -51,7 +40,7 @@ function RepairProgram(aInst)
       aInst[i].inst = "jmp";
 
       let ret = RunProgram(aInst);
-      if (ret.exitCode != -1) 
+      if (ret.exitCode != -1)
         return ret.acc;
       else
         aInst[i].inst = "nop";
@@ -62,7 +51,13 @@ function RepairProgram(aInst)
 }
 
 let instructions = [];
-util.ReduceInput('./Day8Input.txt', ParseProgram, instructions, '\r\n');
+util.ReduceInput('./Day8Input.txt', (aTotal, aElem) => {
+  let rawInst = aElem.split(' ');
+
+  aTotal.push({ inst: rawInst[0], param: parseInt(rawInst[1]) });
+
+  return aTotal;
+}, instructions, '\r\n');
 
 console.log(RunProgram(instructions).acc);
 console.log(RepairProgram(instructions));
