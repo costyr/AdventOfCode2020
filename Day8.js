@@ -50,14 +50,10 @@ function RepairProgram(aInst) {
   return 0;
 }
 
-let instructions = [];
-util.ReduceInput('./Day8Input.txt', (aTotal, aElem) => {
+let instructions = util.MapInput('./Day8Input.txt', (aElem) => {
   let rawInst = aElem.split(' ');
-
-  aTotal.push({ inst: rawInst[0], param: parseInt(rawInst[1]) });
-
-  return aTotal;
-}, instructions, '\r\n');
+  return { inst: rawInst[0], param: parseInt(rawInst[1]) };
+}, '\r\n');
 
 console.log(RunProgram(instructions).acc);
 console.log(RepairProgram(instructions));

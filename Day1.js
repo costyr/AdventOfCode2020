@@ -1,14 +1,6 @@
 const util = require('./Util.js');
 
-function ParseCoins(aTotal, aElem) 
-{
-  aTotal.push(parseInt(aElem, 10));
-
-  return aTotal;
-}
-
-function Analize(aCoins) 
-{
+function Analize(aCoins) {
   for (let i = 0; i < aCoins.length; i++)
     for (let j = i + 1; j < aCoins.length; j++)
       if ((aCoins[i] + aCoins[j]) == 2020)
@@ -17,8 +9,7 @@ function Analize(aCoins)
   return 0;
 }
 
-function Analize2(aCoins) 
-{
+function Analize2(aCoins) {
   for (let i = 0; i < aCoins.length; i++)
     for (let j = i + 1; j < aCoins.length; j++)
       for (let k = j + 1; k < aCoins.length; k++)
@@ -28,8 +19,7 @@ function Analize2(aCoins)
   return 0;
 }
 
-let coins = [];
-util.ReduceInput('./Day1Input.txt', ParseCoins, coins, '\r\n');
+let coins = util.MapInput('./Day1Input.txt', (aElem) => { return parseInt(aElem, 10); }, '\r\n');
 
 console.log(Analize(coins));
 console.log(Analize2(coins));

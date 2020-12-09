@@ -39,11 +39,9 @@ function FindWeekness(aOutput, aErrorNumber) {
 }
 
 let preamble = 25;
-let output = [];
-util.ReduceInput('./Day9Input.txt', (aTotal, aElem) => {
-  aTotal.push(parseInt(aElem));
-  return aTotal;
-}, output, '\r\n');
+let output = util.MapInput('./Day9Input.txt', (aElem) => {
+  return parseInt(aElem);
+}, '\r\n');
 
 let errorNumber = FindError(output, preamble);
 

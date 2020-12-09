@@ -1,14 +1,5 @@
 const util = require('./Util.js');
 
-function ParseMap(aTotal, aElem) 
-{
-  let line = aElem.split('');
-
-  aTotal.push(line);
-
-  return aTotal;
-}
-
 function CountTrees(aMap, aSlopeX, aSlopeY) 
 {
   let i = 0;
@@ -44,8 +35,7 @@ function ComputeTotal(aMap)
   return total;
 }
 
-let map = [];
-util.ReduceInput('./Day3Input.txt', ParseMap, map, '\r\n');
+let map = util.MapInput('./Day3Input.txt', (aElem)=>{ return aElem.split(''); }, '\r\n');
 
 console.log(CountTrees(map, 3, 1));
 console.log(ComputeTotal(map));
