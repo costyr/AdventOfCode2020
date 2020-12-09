@@ -1,8 +1,7 @@
 const util = require('./Util.js');
 
 function FindError(aOutput, aPreamble) {
-  for (let i = aPreamble; i < aOutput.length;i++)
-  {
+  for (let i = aPreamble; i < aOutput.length; i++) {
     let found = false;
     for (let j = (i - aPreamble); j < i; j++) {
       for (let k = j + 1; k < i; k++) {
@@ -11,42 +10,42 @@ function FindError(aOutput, aPreamble) {
           break;
         }
       }
-        if (found)
-          break;
-      }
+      if (found)
+        break;
+    }
     if (!found)
       return aOutput[i];
-  }     
-  return 0;
-}
-
-function FindWeekness(aOutput, aErrorNumber) {
-  for (let i = 0; i < aOutput.length; i++) {
-    let total = 0;
-    let min = Number.MAX_SAFE_INTEGER;
-    let max = 0;
-    for (let j = i; j < aOutput.length; j++) {
-      total += aOutput[j];
-      
-      if (aOutput[j] > max)
-        max = aOutput[j];
-      if (aOutput[j] < min)
-        min = aOutput[j];
-
-      if (total == aErrorNumber)
-        return min + max;
-    }
   }
   return 0;
 }
 
+function FindWeekness(aOutput, aErrorNumber) {
+
+  let sumMap = [];
+  aOutput.reduce((aTotal, aElem, aIndex) => {
+    aTotal[aIndex] = (aIndex == 0) ? aElem :
+      aTotal[aIndex - 1] + aElem;
+    return aTotal;
+  }, sumMap);
+
+  for (let i = 0; i < sumMap.length; i++)
+    for (let j = i + 1; j < sumMap.length; j++)
+      if ((sumMap[j] - sumMap[i]) == aErrorNumber) {
+        let gg = aOutput.slice(i + 1, j + 1).sort((a, b) => { return a - b; });
+        return gg[0] + gg[gg.length - 1];
+      }
+
+  return 0;
+}
+
+let preamble = 25;
 let output = [];
 util.ReduceInput('./Day9Input.txt', (aTotal, aElem) => {
   aTotal.push(parseInt(aElem));
   return aTotal;
 }, output, '\r\n');
 
+let errorNumber = FindError(output, preamble);
 
-let errorNumber = FindError(output, 25);
 console.log(errorNumber);
 console.log(FindWeekness(output, errorNumber));
