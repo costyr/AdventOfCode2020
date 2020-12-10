@@ -1,31 +1,31 @@
 const util = require('./Util.js');
 
-function ConsumeJolts(aOutput) 
-{
+function ConsumeJolts(aAdapters) {
   let start = 0;
-  let map = [];
+  let usedAdapters = [];
   let count1 = 0;
   let count3 = 0;
   let stack = [];
   let combsCount = 1;
-  while (true)
-  {
-    let stepOptions = [];
-    for (let i = 0; i < aOutput.length; i++)
-      if ((map[aOutput[i]] == undefined) && (aOutput[i] - start <= 3))
-      stepOptions.push(aOutput[i]);
-    
-    if (stepOptions.length == 0) {
+  while (true) {
+    let stepAdapters = [];
+    for (let i = 0; i < aAdapters.length; i++)
+      if ((usedAdapters[aAdapters[i]] == undefined) && (aAdapters[i] - start <= 3)) {
+        stepAdapters.push(aAdapters[i]);
+        if (stepAdapters.length == 3)
+          break;
+      }
+
+    if (stepAdapters.length == 0) {
       count3++;
       return { multiplier: count1 * count3, combs: combsCount };
     }
 
-    stepOptions.sort((a, b)=>{ return a - b; });
+    stepAdapters.sort((a, b) => { return a - b; });
 
-    if (stepOptions.length > 1)
-      stack.push(stepOptions.length);
-    else 
-    {
+    if (stepAdapters.length > 1)
+      stack.push(stepAdapters.length);
+    else {
       let checkSum = 0;
       while (stack.length > 0)
         checkSum += stack.pop();
@@ -39,27 +39,27 @@ function ConsumeJolts(aOutput)
         chunkCombs = 7;
 
       combsCount *= chunkCombs;
-    }  
-    
-    map[stepOptions[0]] = 1;
+    }
 
-    if (stepOptions[0] - start == 1) {
-      count1 ++;
+    usedAdapters[stepAdapters[0]] = 1;
+
+    if (stepAdapters[0] - start == 1) {
+      count1++;
       start += 1;
     }
-    else if (stepOptions[0] - start == 3) {
-      count3 ++;
-     start += 3;
+    else if (stepAdapters[0] - start == 3) {
+      count3++;
+      start += 3;
     }
   }
 
   return 0;
 }
 
-let outputJoltage = util.MapInput('./Day10Input.txt', (aElem) => {
+let adapters = util.MapInput('./Day10Input.txt', (aElem) => {
   return parseInt(aElem);
 }, '\r\n');
 
-let joltage = ConsumeJolts(outputJoltage);
+let joltage = ConsumeJolts(adapters);
 console.log(joltage.multiplier);
 console.log(joltage.combs);
