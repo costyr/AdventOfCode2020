@@ -8,8 +8,6 @@ function ReduceStack(aStack, aElem) {
   let result = (op == '+') ? param1 + param2 :
     param1 * param2;
   aStack.push(result.toString());
-
-  return true;
 }
 
 function EvaluateExpresion(aExpresion) {
@@ -18,9 +16,7 @@ function EvaluateExpresion(aExpresion) {
     let elem = aExpresion[i];
     if (elem == ' ')
       continue;
-    else if (elem == '+' || elem == '*')
-      stack.push(elem);
-    else if (elem == '(')
+    else if ((elem == '+') || (elem == '*') || (elem == '('))
       stack.push(elem);
     else if (elem == ')') {
       let param2 = stack.pop();
