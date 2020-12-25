@@ -60,25 +60,23 @@ function CountMatch(aList) {
       let msg = aList.messages[i];
 
       let count0 = 0;
-      while (true)
-      {
+      while (true) {
         let newMsg = msg.replace(regex42, "");
         if (newMsg == msg)
           break;
-          msg = newMsg;
+        msg = newMsg;
         count0++;
       }
 
       let count1 = 0;
-      while (true)
-      {
+      while (true) {
         let newMsg = msg.replace(regex31, "");
         if (newMsg == msg)
           break;
-          msg = newMsg;
+        msg = newMsg;
         count1++;
       }
- 
+
       if (count0 - count1 >= 1)
         count++;
     }
@@ -117,8 +115,6 @@ util.ReduceInput('./Day19Input.txt', (aTotal, aElem, aIndex) => {
 
   return aTotal;
 }, list, '\r\n\r\n');
-
-//PrintRules(list);
 
 console.log(CountMatch(list));
 
