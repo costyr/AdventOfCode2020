@@ -17,7 +17,6 @@ function FindEncryptionKey(aPublicKey, aLoop, aSubjectNumber) {
   while (i < aLoop) {
     value *= aPublicKey;
     value = value % 20201227;
-
     i++;
   }
 
