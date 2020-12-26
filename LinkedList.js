@@ -64,22 +64,30 @@ class LinkedList {
   AddAfter(aNode, aValue) {
     let listNode = new ListNode(aValue);
 
+    return this.AddNodeAfter(aNode, listNode);
+  }
+
+  AddNodeAfter(aNode, aNewNode) {
+
+    if ((aNewNode == null) || (aNewNode == undefined))
+      return;
+
     if (aNode) {
       let next = aNode.mNext;
       if (next)
-        next.mPrev = listNode;
+        next.mPrev = aNewNode;
 
-      aNode.mNext = listNode;
-      listNode.mNext = next;
-      listNode.mPrev = aNode;
+      aNode.mNext = aNewNode;
+      aNewNode.mNext = next;
+      aNewNode.mPrev = aNode;
     }
 
     if (aNode == this.mTail)
-      this.mTail = listNode;
+      this.mTail = aNewNode;
 
     this.mSize++;
 
-    return listNode;
+    return aNewNode;
   }
 
   GetValueAt(aIndex) {
