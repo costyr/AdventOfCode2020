@@ -16,38 +16,29 @@ function GetMin(aCircle) {
   return min;
 }
 
-function GetMax2(aCircle, aExtraMax, aPicked) {
+function GetMax2(aMax, aPicked) {
 
-  if (aExtraMax <= 0)
-  {
-    let max = 0;
-    for (let i = 0; i < aCircle.length; i++)
-      if ((aCircle[i] > max) && !aPicked.find((aElem)=>{ return (aElem.mValue == aCircle[i]); }))
-        max = aCircle[i];
-    return max;
-  }
-
-  let max = aExtraMax;
-  while (aPicked.find((aElem)=>{ return (aElem.mValue == max); }))
+  let max = aMax;
+  while (aPicked.find((aElem) => { return (aElem.mValue == max); }))
     max--;
   return max;
 }
 
-function ComputeDestination(aCircle, aMin, aExtraMax, aCurrent, aPicked) {
+function ComputeDestination(aMin, aMax, aCurrent, aPicked) {
   let dest = aCurrent - 1;
 
   if (dest < aMin) {
-    dest =  GetMax2(aCircle, aExtraMax, aPicked);
+    dest = GetMax2(aMax, aPicked);
     return dest;
   }
-  while (aPicked.find((aElem)=>{ return (aElem.mValue == dest); })) {
+  while (aPicked.find((aElem) => { return (aElem.mValue == dest); })) {
     dest -= 1;
     if (dest < aMin) {
-      dest = GetMax2(aCircle, aExtraMax, aPicked);
+      dest = GetMax2(aMax, aPicked);
       break;
     }
   }
-    
+
   return dest;
 }
 
@@ -57,7 +48,7 @@ function ComputePicked(aFirst, aCurrent) {
   let node = aCurrent;
   while (i < 3) {
     node = node.mNext;
-    
+
     if (node == null)
       node = aFirst;
 
@@ -69,7 +60,7 @@ function ComputePicked(aFirst, aCurrent) {
 
 function RemovePicked(aCircle, aCurrent) {
   let node = aCurrent;
-  let i = 0; 
+  let i = 0;
   let removeList = [];
   while (i < 3) {
 
@@ -94,7 +85,7 @@ function InsertPicked(aCircle, aDest, aPicked, aCache) {
 
 function PlayCrabGame(aInput, aNumberOfMoves, aMaxExtra) {
 
-  let initCircle =  aInput.toString().split('').map((aElem)=>{ 
+  let initCircle = aInput.toString().split('').map((aElem) => {
     return parseInt(aElem, 10);
   });
 
@@ -102,16 +93,15 @@ function PlayCrabGame(aInput, aNumberOfMoves, aMaxExtra) {
 
   let circle = new list.LinkedList();
 
-  initCircle.reduce((aTotal, aElem)=>{ 
+  initCircle.reduce((aTotal, aElem) => {
     aTotal.AddTail(aElem);
     return aTotal;
   }, circle);
 
-  let initMax = GetMax(initCircle, []) + 1;
+  let initMax = GetMax(initCircle, []);
   let additionalCupsCount = aMaxExtra - initCircle.length;
-  if (additionalCupsCount > 0)
-  {
-    let extraCup = initMax;
+  if (additionalCupsCount > 0) {
+    let extraCup = initMax + 1;
     for (let i = 0; i < additionalCupsCount; i++)
       circle.AddTail(extraCup++);
   }
@@ -119,18 +109,16 @@ function PlayCrabGame(aInput, aNumberOfMoves, aMaxExtra) {
   let cache = new Map();
 
   let node = circle.GetHead();
-  while (node != null)
-  {
+  while (node != null) {
     cache.set(node.mValue, node);
     node = node.mNext;
   }
 
   let current = circle.GetHead();
   let i = 0;
-  while (i < aNumberOfMoves)
-  {
+  while (i < aNumberOfMoves) {
     let picked = ComputePicked(circle.GetHead(), current);
-    let dest = ComputeDestination(initCircle, min, aMaxExtra, current.mValue, picked);
+    let dest = ComputeDestination(min, (aMaxExtra <= 0) ? initMax : aMaxExtra, current.mValue, picked);
 
     RemovePicked(circle, current);
     InsertPicked(circle, dest, picked, cache);
@@ -147,8 +135,7 @@ function PlayCrabGame(aInput, aNumberOfMoves, aMaxExtra) {
   let finalOrder = [];
 
   i = 0;
-  while (i < (initCircle.length - 1))
-  {
+  while (i < (initCircle.length - 1)) {
     node = node.mNext;
     if (node == null)
       node = circle.GetHead();
@@ -158,13 +145,12 @@ function PlayCrabGame(aInput, aNumberOfMoves, aMaxExtra) {
 
   if (aMaxExtra > 0)
     return finalOrder[0] * finalOrder[1];
-  else
-  {
-    let result = finalOrder.reduce((aTotal, aElem)=>{ 
-      aTotal += aElem.toString(); 
-      return aTotal; 
+  else {
+    let result = finalOrder.reduce((aTotal, aElem) => {
+      aTotal += aElem.toString();
+      return aTotal;
     }, "");
-     
+
     return result;
   }
 }
