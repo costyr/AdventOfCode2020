@@ -1,20 +1,20 @@
 const util = require('./Util.js');
 
-const kNeighboursTransform = new Map([["e" , [1, 0]],
+const kNeighboursTransform = new Map([["e", [1, 0]],
                                       ["se", [0, 1]],
-                                      ["sw", [-1,1]],
-                                      ["w",  [-1,0]],
-                                      ["ne", [1,-1]],
-                                      ["nw", [0,-1]]]);
+                                      ["sw", [-1, 1]],
+                                      ["w", [-1, 0]],
+                                      ["ne", [1, -1]],
+                                      ["nw", [0, -1]]]);
 
 
 function GetKey0(aX, aY) {
   return aX + "#" + aY;
-}  
+}
 
 function GetKey(aObject) {
   return GetKey0(aObject.x, aObject.y);
-}    
+}
 
 function CountBlack(aTilesState) {
   let blackTilesCount = 0;
@@ -29,11 +29,11 @@ function FlipTiles(aTiles, aTilesState) {
   for (let i = 0; i < aTiles.length; i++) {
 
     let tile = aTilesState.get(GetKey(aTiles[i]));
-    
+
     if (tile !== undefined)
-        tile.color = (tile.color == 0) ? 1 : 0;
+      tile.color = (tile.color == 0) ? 1 : 0;
     else {
-      let entry =  { x: aTiles[i].x, y: aTiles[i].y, color: 1 };
+      let entry = { x: aTiles[i].x, y: aTiles[i].y, color: 1 };
       aTilesState.set(GetKey(entry), entry);
     }
   }
@@ -42,7 +42,7 @@ function FlipTiles(aTiles, aTilesState) {
 }
 
 function GetTile(aX, aY, aTilesState) {
-   return aTilesState.get(GetKey0(aX, aY));
+  return aTilesState.get(GetKey0(aX, aY));
 }
 
 function GetTileColor(aX, aY, aTilesState) {
@@ -67,8 +67,8 @@ function ComputeNeighboursColorCount(aX, aY, aTilesState, aExtra) {
     if (color == 1)
       blackCount++;
 
-      if ((aExtra !== undefined) && (color == -1))
-        aExtra.set(GetKey0(x, y), { x: x, y: y, color: 0 });
+    if ((aExtra !== undefined) && (color == -1))
+      aExtra.set(GetKey0(x, y), { x: x, y: y, color: 0 });
   }
 
   return blackCount;
@@ -94,7 +94,7 @@ function TransformTiles(aTilesState, aNewTilesState) {
     FlipTile(tile, aTilesState, aNewTilesState, extra);
 
     for (let [keyExtra, tileExtra] of extra)
-      FlipTile(tileExtra, aTilesState, aNewTilesState);      
+      FlipTile(tileExtra, aTilesState, aNewTilesState);
   }
 }
 
