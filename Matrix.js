@@ -3,11 +3,13 @@ const kFlipUp = 1;
 const kFlipLeft = 2;
 const kRotate = 3;
 
-function PrintLine(aLine) 
-{
-  let line = ""; 
-  for (let i = 0; i < aLine.length; i++)
-    line += aLine[i];
+function PrintLine(aLine, aSeparator, aFilterFunc) {
+  let line = "";
+  for (let i = 0; i < aLine.length; i++) {
+    if ((aSeparator !== undefined) && (line.length > 0))
+      line += aSeparator;
+    line += (aFilterFunc !== undefined) ? aFilterFunc(aLine[i]) : aLine[i];
+  }
 
   return line;
 }
@@ -20,11 +22,9 @@ function CreateMatrix(aRawMatrix) {
 }
 
 class Matrix {
-  constructor(aWidth, aHeight, aValue)
-  {
+  constructor(aWidth, aHeight, aValue) {
     this.mMatix = [];
-    for (let i = 0; i < aHeight; i++) 
-    {
+    for (let i = 0; i < aHeight; i++) {
       this.mMatix[i] = [];
       for (let j = 0; j < aWidth; j++)
         this.mMatix[i][j] = aValue;
@@ -35,18 +35,15 @@ class Matrix {
     return this.mMatix;
   }
 
-  SetValue(aLine, aCol, aValue) 
-  {
+  SetValue(aLine, aCol, aValue) {
     this.mMatix[aLine][aCol] = aValue;
   }
 
-  GetValue(aLine, aCol) 
-  {
+  GetValue(aLine, aCol) {
     return this.mMatix[aLine][aCol];
   }
 
-  Copy() 
-  {
+  Copy() {
     let height = this.mMatix.length;
     let width = height > 0 ? this.mMatix[0].length : 0;
     let newMatrix = new Matrix(0, 0);
@@ -61,13 +58,12 @@ class Matrix {
     return newMatrix;
   }
 
-  AddPattern(aPattern, aDestX, aDestY, aStartX, aStartY, aLengthX, aLengthY)
-  {
+  AddPattern(aPattern, aDestX, aDestY, aStartX, aStartY, aLengthX, aLengthY) {
     if (this.mMatix.length == 0)
       return;
 
     if ((aLengthY == 0) || (aLengthY > this.mMatix.length) ||
-        (aLengthX == 0) || (aLengthX > this.mMatix[0].length))
+      (aLengthX == 0) || (aLengthX > this.mMatix[0].length))
       return;
 
     for (let i = 0; i < aLengthY; i++)
@@ -75,12 +71,11 @@ class Matrix {
         this.SetValue(aDestY + i, aDestX + j, aPattern[aStartY + i][aStartX + j]);
   }
 
-  Flip(aUp) 
-  {
+  Flip(aUp) {
     let height = this.mMatix.length;
     let width = height > 0 ? this.mMatix[0].length : 0;
     let newMatrix = new Matrix(0, 0);
-    
+
     for (let i = 0; i < height; i++) {
       let k = aUp ? (height - 1 - i) : i;
       if (newMatrix[k] === undefined)
@@ -96,19 +91,18 @@ class Matrix {
     let height = this.mMatix.length;
     let width = height > 0 ? this.mMatix[0].length : 0;
     let newMatrix = new Matrix(0, 0);
-    
-    for (let i = 0; i < height; i++) { 
+
+    for (let i = 0; i < height; i++) {
       if (newMatrix[i] === undefined)
         newMatrix.mMatix[i] = [];
-      for (let j = 0; j < width; j++) 
+      for (let j = 0; j < width; j++)
         newMatrix.SetValue(i, width - 1 - j, this.GetValue(j, i));
     }
 
     return newMatrix;
   }
 
-  ApplyTransforms(aTransforms) 
-  {
+  ApplyTransforms(aTransforms) {
     let newImage = this;
     for (let i = 0; i < aTransforms.length; i++)
       if (aTransforms[i] == 1)
@@ -120,20 +114,17 @@ class Matrix {
     return newImage;
   }
 
-  FindPattern(aPattern) 
-  {
+  FindPattern(aPattern, aIgnore) {
     if (aPattern.length == 0)
       return 0;
 
     let count = 0;
     for (let i = 0; i < this.mMatix.length - aPattern.length; i++)
-      for (let j = 0; j < this.mMatix[i].length - aPattern[0].length; j++)
-      {
+      for (let j = 0; j < this.mMatix[i].length - aPattern[0].length; j++) {
         let found = true;
         for (let k = 0; k < aPattern.length; k++)
           for (let l = 0; l < aPattern[k].length; l++)
-            if ((aPattern[k][l] == '#') && (this.mMatix[i + k][j + l] != aPattern[k][l]))
-            {
+            if ((aIgnore.indexOf(aPattern[k][l]) == -1) && (this.mMatix[i + k][j + l] != aPattern[k][l])) {
               found = false;
               break;
             }
@@ -141,19 +132,27 @@ class Matrix {
         if (found)
           count++;
       }
-    return count;    
+    return count;
   }
 
-  Print()
-  {
-    for (let i = 0; i < this.mMatix.length; i++) 
-      console.log(PrintLine(this.mMatix[i]));
+  CountElement(aElementValue) {
+    let count = 0;
+    for (let i = 0; i < this.mMatix.length; i++)
+      for (let j = 0; j < this.mMatix[i].length; j++)
+        if (this.mMatix[i][j] == aElementValue)
+          count++;
+
+    return count;
   }
 
-  PrintReverse()
-  {
-    for (let i = this.mMatix.length - 1; i >= 0; i--) 
-      console.log(PrintLine(this.mMatix[i]));
+  Print(aSeparator, aFilterFunc) {
+    for (let i = 0; i < this.mMatix.length; i++)
+      console.log(PrintLine(this.mMatix[i], aSeparator, aFilterFunc));
+  }
+
+  PrintReverse(aSeparator, aFilterFunc) {
+    for (let i = this.mMatix.length - 1; i >= 0; i--)
+      console.log(PrintLine(this.mMatix[i], aSeparator, aFilterFunc));
   }
 }
 

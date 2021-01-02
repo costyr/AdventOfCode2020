@@ -1,37 +1,12 @@
 const util = require('./Util.js');
 const matrix = require('./Matrix.js');
 
-function PrintLine(aLine) {
-  let line = "";
-  for (let i = 0; i < aLine.length; i++)
-    line += aLine[i];
-
-  return line;
-}
-
-function Print(aMatix) {
-  for (let i = 0; i < aMatix.length; i++)
-    console.log(PrintLine(aMatix[i]));
-}
-
 function PrintImages(aImages) {
-  for (let i = 0; i < aImages.length; i++) {
-    console.log(aImages[i].id);
-    Print(aImages[i].img);
+  aImages.forEach(aValue => {
+    console.log(aValue.id);
+    matrix.CreateMatrix(aValue.img).Print();
     console.log("\r\n");
-  }
-}
-
-function PrintIds(aMatrix) {
-  for (let i = 0; i < aMatrix.mMatix.length; i++) {
-    let line = "";
-    for (let j = 0; j < aMatrix.mMatix.length; j++) {
-      if (line.length > 0)
-        line += ",";
-      line += aMatrix.mMatix[i][j].id.toString();
-    }
-    console.log(line);
-  }
+  });
 }
 
 function ExtractChecksum(aImg, aX, aY, aStartX, aStartY) {
@@ -45,10 +20,8 @@ function ExtractChecksum(aImg, aX, aY, aStartX, aStartY) {
     if (aY == 0)
       break;
   }
-  //console.log(str);
-  let gg = str.replace(/\./g, "0").replace(/\#/g, "1");
-  //console.log(gg);
-  return parseInt(gg, 2);
+  let signature = str.replace(/\./g, "0").replace(/\#/g, "1");
+  return parseInt(signature, 2);
 }
 
 function ExtractBorder(aImg) {
@@ -227,14 +200,14 @@ function FindPieces(aTransforms, aFilter, aMatrix, aX, aY) {
   return pieces;
 }
 
-function AssembleBorderElement(aCorner, aTrans, aImagesMap, aTransfromMap, aTransforms, aMid, aBorders, aMatrix, aX, aY) {
+function AssembleBorderElement(aImagesMap, aTransfromMap, aTransforms, aMid, aBorders, aMatrix, aX, aY, aResult) {
+
+  if (aResult.notPartofSeaMonsterCount > 0)
+    return;
 
   let width = aMatrix.mMatix.length;
   if (aY >= width) {
-    //console.log(aCorner + " " + aTrans);
-    //PrintBigPicture(aMatrix);
-    //console.log("\n");
-    SearchBigPicture(aMatrix, aImagesMap, aTransfromMap);
+    aResult.notPartofSeaMonsterCount = SearchBigPicture(aMatrix, aImagesMap, aTransfromMap);
     return;
   }
 
@@ -254,17 +227,10 @@ function AssembleBorderElement(aCorner, aTrans, aImagesMap, aTransfromMap, aTran
 
   let pieces = FindPieces(aTransforms, isMid ? aMid : aBorders, aMatrix, aX, aY);
 
-  /*if (pieces.length == 0) {
-    console.log("Piece not found on position: " + aX + " " + aY + " " + aCorner + " " + aTrans);
-    PrintIds(aMatrix);
-    console.log("\n");
-  }*/
-
   for (let i = 0; i < pieces.length; i++) {
 
     let newMatrix = aMatrix.Copy();
 
-    //console.log(aY + " " + aX);
     newMatrix.SetValue(aY, aX, { id: pieces[i].id, t: pieces[i].t, m: pieces[i].m });
 
     let newMid = new Set(aMid);
@@ -272,11 +238,11 @@ function AssembleBorderElement(aCorner, aTrans, aImagesMap, aTransfromMap, aTran
 
     let newBorders = new Set(aBorders);
     newBorders.delete(pieces[i].id);
-    AssembleBorderElement(aCorner, aTrans, aImagesMap, aTransfromMap, aTransforms, newMid, newBorders, newMatrix, x, y);
+    AssembleBorderElement(aImagesMap, aTransfromMap, aTransforms, newMid, newBorders, newMatrix, x, y, aResult);
   }
 }
 
-function AssembleBorder(aImagesMap, aTransfromMap, aTransforms, aMid, aBorders, aCorners) {
+function AssembleBorder(aImagesMap, aTransfromMap, aTransforms, aMid, aBorders, aCorners, aResult) {
   let width = Math.sqrt(aTransforms.size);
 
   for (let corner of aCorners.keys()) {
@@ -286,7 +252,7 @@ function AssembleBorder(aImagesMap, aTransfromMap, aTransforms, aMid, aBorders, 
       bigPicture.SetValue(0, 0, { id: corner, t: i, m: transform[i] });
       let newBorders = new Set(aBorders);
       newBorders.delete(corner);
-      AssembleBorderElement(corner, i, aImagesMap, aTransfromMap, aTransforms, aMid, newBorders, bigPicture, 1, 0);
+      AssembleBorderElement(aImagesMap, aTransfromMap, aTransforms, aMid, newBorders, bigPicture, 1, 0, aResult);
     }
   }
 }
@@ -356,16 +322,6 @@ function TransformImage(aImage, aTransfromMap, aTransIndex) {
   return image.ApplyTransforms(transforms);
 }
 
-function CountHash(aImage) {
-  let count = 0;
-  for (let i = 0; i < aImage.length; i++)
-    for (let j = 0; j < aImage[i].length; j++)
-      if (aImage[i][j] == '#')
-        count ++;
-
-  return count;
-}
-
 function SearchBigPicture(aBigPicture, aImagesMap, aTransfromMap) {
   let width = aBigPicture.mMatix.length;
   let pieceWidth = 8;
@@ -380,22 +336,19 @@ function SearchBigPicture(aBigPicture, aImagesMap, aTransfromMap) {
 
       let imagePiece = TransformImage(initialImage, aTransfromMap, cell.t);
 
-      //imagePiece.Print();
-      //console.log("\n");
-
       bigImage.AddPattern(imagePiece.GetMatrix(), j * pieceWidth, i * pieceWidth, 1, 1, pieceWidth, pieceWidth);
     }
 
-  //bigImage.Print();
+  const seaMonster = [[' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','#',' '],
+                      ['#',' ',' ',' ',' ','#','#',' ',' ',' ',' ','#','#',' ',' ',' ',' ','#','#','#'],
+                      [' ','#',' ',' ','#',' ',' ','#',' ',' ','#',' ',' ','#',' ',' ','#',' ',' ',' ']];
 
-  let searchPattern = [[' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','#',' '],
-                       ['#',' ',' ',' ',' ','#','#',' ',' ',' ',' ','#','#',' ',' ',' ',' ','#','#','#'],
-                       [' ','#',' ',' ','#',' ',' ','#',' ',' ','#',' ',' ','#',' ',' ','#',' ',' ',' ']];
-
-  let count = bigImage.FindPattern(searchPattern);
+  let count = bigImage.FindPattern(seaMonster, [' ']);
 
   if (count > 0)
-    console.log(CountHash(bigImage.mMatix) - count * CountHash(searchPattern));
+    return bigImage.CountElement('#') - count * matrix.CreateMatrix(seaMonster).CountElement('#');
+
+  return 0;
 }
 
 function GenerateTransformMap() {
@@ -437,27 +390,13 @@ let imagesMap = GenerateImagesMap(images);
 
 let transfromMap = GenerateTransformMap();
 
-//PrintImages(images);
-//let ff = ExtractBorder(images[2].img);
-//console.log(ff);
-//console.log(GenerateTransforms(ff));
-//console.log(FindCorners(images));
 let corners = new Set();
 let borders = new Set();
 let mid = new Set();
 
 let transforms = GenerateAllTransforms(images)
 console.log(FindCorners(transforms, mid, borders, corners));
-//console.log(corners);
-//console.log(borders);
-//console.log(mid);
 
-AssembleBorder(imagesMap, transfromMap, transforms, mid, borders, corners);
-/*let img = new matrix.Matrix(10, 10, " ");
-PrintTransform(img, transforms.get(2473)[0], 0, 0);
-img.Print();
-
-let flipUpImg = img.Flip(true);
-flipUpImg.Print();
-let rotated = img.Rotate();
-rotated.Print();*/
+let result = {notPartofSeaMonsterCount: 0};
+AssembleBorder(imagesMap, transfromMap, transforms, mid, borders, corners, result);
+console.log(result.notPartofSeaMonsterCount);
