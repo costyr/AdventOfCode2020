@@ -1,176 +1,50 @@
 const util = require('./Util.js');
+const pointmap = require('./PointMap.js');
+const nthMatrix = require('./NthMatrix.js');
 
-function PrintLine(aLine) {
-  let line = "";
-  for (let i = 0; i < aLine.length; i++)
-    line += aLine[i];
+const kNeighbours3DTransform = pointmap.ComputeNthNeighboursTransform(3);
+const kNeighbours4DTransform = pointmap.ComputeNthNeighboursTransform(4);
 
-  return line;
+function CountNeighbours3D(a3DMatrix, aX, aY, aZ) {
+  let countMap = new Map();
+  pointmap.CountNthNeighbours(((a3DMatrix, aPoint) => {
+    
+    let x = aPoint[0];
+    let y = aPoint[1];
+    let z = aPoint[2];
+    
+    if ((z >= 0) && (z < a3DMatrix.length) &&
+        (y >= 0) && (y < a3DMatrix[z].length) &&
+        (x >= 0) && (x < a3DMatrix[z][y].length))
+      return a3DMatrix[z][y][x];
+    else
+      return '.';
+
+  }).bind(null, a3DMatrix), kNeighbours3DTransform, [aX, aY, aZ], countMap);
+
+ return countMap.get('#');
 }
 
-function Print(aMatix) {
-  for (let i = 0; i < aMatix.length; i++)
-    console.log(PrintLine(aMatix[i]));
-}
+function CountNeighbours4D(a4DMatrix, aX, aY, aZ, aW) {
+  let countMap = new Map();
+  pointmap.CountNthNeighbours(((a4DMatrix, aPoint) => {
+    
+    let x = aPoint[0];
+    let y = aPoint[1];
+    let z = aPoint[2];
+    let w = aPoint[3];
+    
+    if ((w >= 0) && (w < a4DMatrix.length) &&
+        (z >= 0) && (z < a4DMatrix[w].length) &&
+        (y >= 0) && (y < a4DMatrix[w][z].length) &&
+        (x >= 0) && (x < a4DMatrix[w][z][y].length))
+      return a4DMatrix[w][z][y][x];
+    else
+      return '.';
 
-function Print3DMatrix(aZMatrix) {
-  for (let i = 0; i < aZMatrix.length; i++) {
-    console.log("z: " + i);
-    Print(aZMatrix[i]);
-    console.log("\n");
-  }
-}
+  }).bind(null, a4DMatrix), kNeighbours4DTransform, [aX, aY, aZ, aW], countMap);
 
-function Print4DMatrix(aWZMatrix) {
-  for (let i = 0; i < aWZMatrix.length; i++) {
-    console.log("w: " + i);
-    Print3DMatrix(aWZMatrix[i]);
-    console.log("\n");
-  }
-}
-
-function GetNeighbours3D(aZMatrix, aX, aY, aZ) {
-  const neighboursTransform = [[0, 0], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1]];
-  const zNeighboursTransform = [-1, 0, 1];
-
-  let neighbours = [];
-  for (let j = 0; j < zNeighboursTransform.length; j++)
-    for (let i = 0; i < neighboursTransform.length; i++) {
-      let x = aX + neighboursTransform[i][0];
-      let y = aY + neighboursTransform[i][1];
-      let z = aZ + zNeighboursTransform[j];
-
-      if ((x == aX) && (y == aY) && (aZ == z))
-        continue;
-
-      if ((z >= 0) && (z < aZMatrix.length) && (y >= 0) && (y < aZMatrix[z].length) && (x >= 0) && (x < aZMatrix[z][y].length))
-        neighbours.push(aZMatrix[z][y][x]);
-      else
-        neighbours.push('.');
-    }
-
-  return neighbours;
-}
-
-function GetNeighbours4D(aZMatrix, aX, aY, aZ, aW) {
-  const neighbours3DTransform = [[0, 0, -1], [1, 0, -1], [1, 1, -1], [0, 1, -1], [-1, 1, -1], [-1, 0, -1], [-1, -1, -1], [0, -1, -1], [1, -1, -1],
-                                 [0, 0,  0], [1, 0,  0], [1, 1,  0], [0, 1,  0], [-1, 1,  0], [-1, 0,  0], [-1, -1,  0], [0, -1,  0], [1, -1,  0],
-                                 [0, 0,  1], [1, 0,  1], [1, 1,  1], [0, 1,  1], [-1, 1,  1], [-1, 0,  1], [-1, -1,  1], [0, -1,  1], [1, -1,  1]];
-  const wNeighboursTransform = [-1, 0, 1];
-
-  let neighbours = [];
-  for (let j = 0; j < wNeighboursTransform.length; j++)
-    for (let i = 0; i < neighbours3DTransform.length; i++) {
-      let x = aX + neighbours3DTransform[i][0];
-      let y = aY + neighbours3DTransform[i][1];
-      let z = aZ + neighbours3DTransform[i][2];
-      let w = aW + wNeighboursTransform[j];
-
-      if ((x == aX) && 
-          (y == aY) && 
-          (z == aZ) && 
-          (w == aW))
-        continue;
-
-      if ((w >= 0) && (w < aZMatrix.length) &&
-          (z >= 0) && (z < aZMatrix[w].length) &&
-          (y >= 0) && (y < aZMatrix[w][z].length) &&
-          (x >= 0) && (x < aZMatrix[w][z][y].length))
-        neighbours.push(aZMatrix[w][z][y][x]);
-      else
-        neighbours.push('.');
-    }
-
-  return neighbours;
-}
-
-function GenerateMatrix(aWidth, aHeight) {
-  let matrix = [];
-  for (let y = 0; y < aHeight; y++) {
-    if (matrix[y] == undefined)
-      matrix[y] = [];
-    for (let x = 0; x < aWidth; x++)
-      matrix[y][x] = '.';
-  }
-
-  return matrix;
-}
-
-function Generate3DMatrix(aWidth, aHeight, aDepth) {
-  let matrix = [];
-  for (let i = 0; i < aDepth; i++)
-    matrix[i] = GenerateMatrix(aWidth, aHeight);
-
-  return matrix;
-}
-
-function Generate4DMatrix(aWidth, aHeight, aDepth, aTime) {
-  let matrix = [];
-  for (let i = 0; i < aTime; i++)
-    matrix[i] = Generate3DMatrix(aWidth, aHeight, aDepth);
-
-  return matrix;
-}
-
-function Copy2Dto4D(a4DMatrix, a2DMatrix, aX, aY, aZ, aW) {
-  for (let y = 0, j = aY; y < a2DMatrix.length; y++, j++) 
-    for (let x = 0, i = aX; x < a2DMatrix[y].length; x++, i++) {
-      a4DMatrix[aW][aZ][j][i] = a2DMatrix[y][x];
-    }
-}
-
-function ExtendMatrix(aMatrix) {
-
-  let newRow = [];
-  for (let x = 0; x < aMatrix[0].length; x++)
-    newRow.push('.');
-
-  aMatrix.unshift(newRow);
-
-  for (let y = 0; y < aMatrix.length; y++) {
-    aMatrix[y].unshift('.');
-    aMatrix[y].push('.');
-  }
-
-  aMatrix.push(newRow);
-}
-
-function CountActive3D(aZMatrix) {
-  let count = 0;
-  for (let z = 0; z < aZMatrix.length; z++)
-    for (let y = 0; y < aZMatrix[z].length; y++)
-      for (let x = 0; x < aZMatrix[z][y].length; x++)
-        if (aZMatrix[z][y][x] == '#')
-          count++;
-  return count;
-}
-
-function CountActive4D(aWZMatrix) {
-  let count = 0;
-  for (let w = 0; w < aWZMatrix.length; w++)
-    count += CountActive3D(aWZMatrix[w]);
-  return count;
-}
-
-function Extend3DMatrix(aZMatrix) {
-  let width = aZMatrix[0].length;
-  let height = aZMatrix[0][0].length;
-
-  aZMatrix.unshift(GenerateMatrix(width, height));
-  for (let i = 0; i < aZMatrix.length; i++)
-    ExtendMatrix(aZMatrix[i]);
-  aZMatrix.push(GenerateMatrix(width + 2, height + 2));
-}
-
-function Extend4DMatrix(aWZMatrix) {
-  let depth = aWZMatrix[0].length;
-  let width = aWZMatrix[0][0].length;
-  let height = aWZMatrix[0][0][0].length;
-
-  aWZMatrix.unshift(Generate3DMatrix(width, height, depth));
-  for (let i = 0; i < aWZMatrix.length; i++)
-    Extend3DMatrix(aWZMatrix[i]);
-  aWZMatrix.push(Generate3DMatrix(width + 2, height + 2, depth + 2));
+ return countMap.get('#');
 }
 
 function Transform3D(aMatrix, aCyclesCount) {
@@ -179,10 +53,10 @@ function Transform3D(aMatrix, aCyclesCount) {
   let width = aMatrix[0].length + 2;
   let height = aMatrix.length + 2;
 
-  zMatrix.push(GenerateMatrix(width, height));
-  ExtendMatrix(aMatrix);
+  zMatrix.push(nthMatrix.GenerateMatrix(width, height, '.'));
+  nthMatrix.Extend2DMatrix(aMatrix, '.');
   zMatrix.push(aMatrix);
-  zMatrix.push(GenerateMatrix(width, height));
+  zMatrix.push(nthMatrix.GenerateMatrix(width, height, '.'));
 
   let i = 0;
   while (i < aCyclesCount) {
@@ -195,12 +69,7 @@ function Transform3D(aMatrix, aCyclesCount) {
         if (newZMatrix[z][y] == undefined)
           newZMatrix[z][y] = [];
         for (let x = 0; x < zMatrix[z][y].length; x++) {
-          let neighbours = GetNeighbours3D(zMatrix, x, y, z);
-          let count = neighbours.reduce((aTotal, aElem) => {
-            if (aElem == '#')
-              aTotal++;
-            return aTotal;
-          }, 0);
+          let count = CountNeighbours3D(zMatrix, x, y, z);
           if (zMatrix[z][y][x] == '#') {
             if (count == 2 || count == 3)
               newZMatrix[z][y][x] = '#'
@@ -219,19 +88,19 @@ function Transform3D(aMatrix, aCyclesCount) {
 
     zMatrix = newZMatrix;
 
-    Extend3DMatrix(zMatrix);
+    nthMatrix.ExtendNthMatrix(3, zMatrix, '.');
     i++;
   }
-  return CountActive3D(zMatrix);
+  return nthMatrix.NthCountElement(3, zMatrix, '#');
 }
 
 function Transform4D(aMatrix, aCyclesCount) {
   let width = aMatrix[0].length + 2;
   let height = aMatrix.length + 2;
 
-  let wzMatrix = Generate4DMatrix(width, height, 3, 3);
+  let wzMatrix = nthMatrix.Generate4DMatrix(width, height, 3, 3);
 
-  Copy2Dto4D(wzMatrix, aMatrix, 1, 1, 1, 1);
+  nthMatrix.Copy2Dto4D(wzMatrix, aMatrix, 1, 1, 1, 1);
 
   let i = 0;
   while (i < aCyclesCount) {
@@ -247,12 +116,7 @@ function Transform4D(aMatrix, aCyclesCount) {
           if (newWZMatrix[w][z][y] == undefined)
             newWZMatrix[w][z][y] = [];
           for (let x = 0; x < wzMatrix[w][z][y].length; x++) {
-            let neighbours = GetNeighbours4D(wzMatrix, x, y, z, w);
-            let count = neighbours.reduce((aTotal, aElem) => {
-              if (aElem == '#')
-                aTotal++;
-              return aTotal;
-            }, 0);
+            let count = CountNeighbours4D(wzMatrix, x, y, z, w);
             if (wzMatrix[w][z][y][x] == '#') {
               if (count == 2 || count == 3)
                 newWZMatrix[w][z][y][x] = '#'
@@ -272,15 +136,50 @@ function Transform4D(aMatrix, aCyclesCount) {
 
     wzMatrix = newWZMatrix;
 
-    Extend4DMatrix(wzMatrix);
+    nthMatrix.ExtendNthMatrix(4, wzMatrix, '.');
     i++;
   }
-  return CountActive4D(wzMatrix);
+  return nthMatrix.NthCountElement(4, wzMatrix, '#');
+}
+
+function ElementTransform(aPoint, aKey, aExtendedValue, aCountMap, aNewPointMap) {
+
+  let value = (aExtendedValue == null) ? '.' : aExtendedValue.value;
+
+  let elemCount = aCountMap.get('#');
+
+  if (value == '#')
+  {
+    if (elemCount == 2 || elemCount == 3)
+      aNewPointMap.Add(aPoint, '#', aKey);
+  }
+  else 
+  { 
+    if (elemCount == 3)
+      aNewPointMap.Add(aPoint, '#', aKey);
+  }
+}
+
+function TransformNth(aMatrix, aDimension, aCyclesCount) {
+   let pointMap = new pointmap.PointMap(aDimension, '.');
+   pointMap.From2DMatrix(aMatrix);
+
+   let i = 0;
+   while (i < aCyclesCount)
+   {
+    pointMap = pointMap.Transform(ElementTransform);
+    i++;
+   }
+   
+   return pointMap.CountElement('#');
 }
 
 let matrix = util.MapInput('./Day17Input.txt', (aElem) => {
   return aElem.split('');
 }, '\r\n');
 
-console.log(Transform3D(matrix, 6));
-console.log(Transform4D(matrix, 6));
+console.log(TransformNth(matrix, 3, 6));
+console.log(TransformNth(matrix, 4, 6));
+
+//console.log(Transform3D(matrix, 6));
+//console.log(Transform4D(matrix, 6));
