@@ -23,11 +23,14 @@ function Generate4DMatrix(aWidth, aHeight, aDepth, aTime, aDefaultValue) {
   return GenerateNthMatrix([aWidth, aHeight, aDepth, aTime], aDefaultValue);
 }
 
-function Copy2Dto4D(a4DMatrix, a2DMatrix, aX, aY, aZ, aW) {
-  for (let y = 0, j = aY; y < a2DMatrix.length; y++, j++) 
-    for (let x = 0, i = aX; x < a2DMatrix[y].length; x++, i++) {
-      a4DMatrix[aW][aZ][j][i] = a2DMatrix[y][x];
-    }
+function Copy2DtoNth(aNth, aNthMatrix, a2DMatrix, aPoint) {
+  if (aNth == 2) {
+    for (let y = 0, j = aPoint[1]; y < a2DMatrix.length; y++, j++) 
+      for (let x = 0, i = aPoint[0]; x < a2DMatrix[y].length; x++, i++)
+        aNthMatrix[j][i] = a2DMatrix[y][x];
+  }
+  else 
+    Copy2DtoNth(aNth - 1, aNthMatrix[aPoint[aPoint.length - 1]], a2DMatrix, aPoint.slice(0, aPoint.length - 1));
 }
 
 function Extend2DMatrix(aMatrix, aDefaultValue) {
@@ -98,7 +101,7 @@ function PrintNthMatrix(aNth, aNthMatrix, aExtra, aNthSeparator, aSeparator, aFi
     return;
   }
 
-  for (let i = 0; i < aNthMatrix.length; i++)
+  for (let i = 0; i < aNthclsMatrix.length; i++)
   {
     let extra = [];
     for (let j = 0; j < aExtra.length; j++)
@@ -113,7 +116,7 @@ module.exports = {
   GenerateNthMatrix,
   Generate3DMatrix,
   Generate4DMatrix,
-  Copy2Dto4D,
+  Copy2DtoNth,
   Extend2DMatrix,
   ExtendNthMatrix,
   NthCountElement,

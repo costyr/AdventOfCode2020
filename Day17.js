@@ -48,15 +48,12 @@ function CountNeighbours4D(a4DMatrix, aX, aY, aZ, aW) {
 }
 
 function Transform3D(aMatrix, aCyclesCount) {
-  let zMatrix = [];
-
   let width = aMatrix[0].length + 2;
   let height = aMatrix.length + 2;
 
-  zMatrix.push(nthMatrix.GenerateMatrix(width, height, '.'));
-  nthMatrix.Extend2DMatrix(aMatrix, '.');
-  zMatrix.push(aMatrix);
-  zMatrix.push(nthMatrix.GenerateMatrix(width, height, '.'));
+  let zMatrix = nthMatrix.Generate3DMatrix(width, height, 3);
+
+  nthMatrix.Copy2DtoNth(3, zMatrix, aMatrix, [1, 1, 1]);
 
   let i = 0;
   while (i < aCyclesCount) {
@@ -100,7 +97,7 @@ function Transform4D(aMatrix, aCyclesCount) {
 
   let wzMatrix = nthMatrix.Generate4DMatrix(width, height, 3, 3);
 
-  nthMatrix.Copy2Dto4D(wzMatrix, aMatrix, 1, 1, 1, 1);
+  nthMatrix.Copy2DtoNth(4, wzMatrix, aMatrix, [1, 1, 1, 1]);
 
   let i = 0;
   while (i < aCyclesCount) {
@@ -178,8 +175,8 @@ let matrix = util.MapInput('./Day17Input.txt', (aElem) => {
   return aElem.split('');
 }, '\r\n');
 
-console.log(TransformNth(matrix, 3, 6));
-console.log(TransformNth(matrix, 4, 6));
+//console.log(TransformNth(matrix, 3, 6));
+//console.log(TransformNth(matrix, 4, 6));
 
-//console.log(Transform3D(matrix, 6));
-//console.log(Transform4D(matrix, 6));
+console.log(Transform3D(matrix, 6));
+console.log(Transform4D(matrix, 6));
